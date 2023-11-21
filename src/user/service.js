@@ -32,6 +32,15 @@ class UserService {
   async getUserById(userId) {
     return User.findById(userId);
   }
+
+  // 회원 삭제
+  async deleteUser(userId) {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      throw { status: 404, message: "User not found" };
+    }
+    return user;
+  }
 }
 
 module.exports = new UserService();

@@ -5,6 +5,7 @@ const userService = require("./service");
 const { JoiSchema: userJoiSchema } = require("./model/user.schema");
 const JWT = require("../utils/jwt");
 const mongoose = require("mongoose");
+const JwtMiddleware = require("../middleware/jwt-handler");
 
 // 회원가입
 router.post(
@@ -122,6 +123,37 @@ router.get(
       res.status(400).json({
         status: 400,
         message: "Invalid ObjectId",
+      });
+    }
+  })
+);
+
+// 회원탈퇴
+router.delete(
+  "/:userId",
+  JwtMiddleware.checkToken,
+  asyncHandler(async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+      const user = await userService.deleteUser(userId);
+
+      if (!user) {
+        res.status(404).json({
+          status: 404,
+          message: "회원이 존재하지 않습니다.",
+        });
+      } else {
+        res.status(200).json({
+          status: 200,
+          message: "회원탈퇴 성공",
+          data: user,
+        });
+      }
+    } catch (error) {
+      res.status(400).json({
+        status: 400,
+        message: "회원탈퇴 실패",
       });
     }
   })
