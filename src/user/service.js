@@ -33,6 +33,18 @@ class UserService {
     return User.findById(userId);
   }
 
+  // 회원 정보 수정
+  async updateUser(userId, updates) {
+    const user = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    });
+    if (!user) {
+      throw { status: 404, message: "존재하지 않는 회원입니다." };
+    }
+    return user;
+  }
+
   // 회원 삭제
   async deleteUser(userId) {
     const user = await User.findByIdAndDelete(userId);
