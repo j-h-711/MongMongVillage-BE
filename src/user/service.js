@@ -5,6 +5,9 @@ const bcrypt = require("bcrypt");
 class UserService {
   // 회원 생성
   async createUser(userInfo) {
+    if (!userInfo.password) {
+      throw new Error("Password is required.");
+    }
     const hashedPassword = await bcrypt.hash(userInfo.password, 10);
     userInfo.password = hashedPassword;
     const user = await User.create(userInfo);
@@ -16,14 +19,14 @@ class UserService {
     const userEmail = await User.findOne({ email });
 
     if (!userEmail) {
-      return { success: false, fail: "가입되지 않은 이메일입니다" };
+      return { success: false, fail: "email" };
     }
 
-    const passwordMatch = await bcrypt.compare(password, User.password);
+    const passwordMatch = await bcrypt.compare(password, userEmail.password);
     if (!passwordMatch) {
-      return { success: falses, fail: "비밀번호가 일치하지 않습니다." };
+      return { success: false, fail: "password" };
     }
-    return { success: true, userEmail };
+    return { success: true, user: userEmail };
   }
 }
 
