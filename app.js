@@ -11,6 +11,7 @@ const boardRouter = require("./src/board/router");
 const app = express();
 connect();
 
+app.use(express.json());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

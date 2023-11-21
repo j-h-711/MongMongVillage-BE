@@ -4,6 +4,7 @@ const router = express.Router();
 const userService = require("./service");
 const { JoiSchema: userJoiSchema } = require("./model/user.schema");
 const JWT = require("../utils/jwt");
+const mongoose = require("mongoose");
 
 // 회원가입
 router.post(
@@ -70,12 +71,7 @@ router.post(
     }
 
     const { user } = userLogin;
-
-    // user 객체 확인 후 _id를 읽어옴
-    const userId = user && user._id ? user._id : null;
-
-    // user 객체 확인 후 email을 읽어옴
-    const userEmail = user && user.email ? user.email : null;
+    const { role } = user;
 
     const tokenPayload = {
       userId: user._id,
@@ -90,6 +86,44 @@ router.post(
       message: "success",
       data: token,
     });
+  })
+);
+
+// 회원 정보 조회
+router.get(
+  "/:userId",
+  asyncHandler(async (req, res) => {
+    const userId = req.params.userId;
+
+    // ObjectId가 유효한지 확인
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        status: 400,
+        message: "Invalid ObjectId",
+      });
+    }
+
+    try {
+      const user = await userService.getUserById(userId);
+
+      if (!user) {
+        res.status(404).json({
+          status: 404,
+          message: "회원이 존재하지 않습니다.",
+        });
+      } else {
+        res.status(200).json({
+          status: 200,
+          message: "조회 성공",
+          data: user,
+        });
+      }
+    } catch (error) {
+      res.status(400).json({
+        status: 400,
+        message: "Invalid ObjectId",
+      });
+    }
   })
 );
 

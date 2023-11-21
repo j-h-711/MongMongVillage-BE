@@ -1,4 +1,3 @@
-const hashPassword = require("../utils/hash-password");
 const { User } = require("./model/user.schema");
 const bcrypt = require("bcrypt");
 
@@ -27,6 +26,11 @@ class UserService {
       return { success: false, fail: "password" };
     }
     return { success: true, user: userEmail };
+  }
+
+  // 회원 정보 조회
+  async getUserById(userId) {
+    return User.findById(userId);
   }
 }
 
