@@ -1,8 +1,8 @@
 const express = require("express");
-const morgan = require("morgan");
-const dotenv = require("dotenv");
-const connect = require("./src/db");
-// const getUserFromJWT = require("./middleware/get-user-from-jwt");
+const cors = require('cors');
+const morgan = require('morgan');
+const dotenv = require('dotenv');
+const connect = require('./src/db');
 
 dotenv.config();
 const userRouter = require("./src/user/router");
@@ -11,8 +11,12 @@ const boardRouter = require("./src/board/router");
 const app = express();
 connect();
 
-app.use(express.json());
-app.use(morgan("dev"));
+app.use(cors({
+  origin: true,
+  credentials: false,
+}));
+
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -24,6 +28,10 @@ app.use("/api/boards", boardRouter);
 
 app.get("/api", (req, res) => {
   res.send("test");
+});
+
+app.get('/', (req, res) => {
+  res.send('hi');
 });
 
 app.use((req, res, next) => {
