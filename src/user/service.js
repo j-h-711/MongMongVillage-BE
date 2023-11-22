@@ -30,9 +30,8 @@ class UserService {
 
   // 회원 정보 조회
   async getUserById(userId) {
-    return User.findById(userId);
+    return User.findById(userId).select("-password");
   }
-
   // 회원 정보 수정
   async updateUser(userId, updates) {
     const user = await User.findByIdAndUpdate(userId, updates, {
