@@ -26,10 +26,10 @@ exports.createBoard = async ({ userId, title, content, animalType, category, ima
     }
 }
 
-exports.updateBoard = async ({ boardId, title, content, animalType, category, imageUrl }) => {
+exports.updateBoard = async ({ boardId, userId, title, content, animalType, category, imageUrl }) => {
     try {
-        const board = await Board.findByIdAndUpdate(
-            { _id: boardId },
+        const board = await Board.findOneAndUpdate(
+            { _id: boardId, user_id: userId },
             {
                 title: title,
                 content: content,
@@ -41,8 +41,8 @@ exports.updateBoard = async ({ boardId, title, content, animalType, category, im
         );
         if (!board) {
             return {
-                status: 404,
-                message: '존재하지 않는 게시글입니다.'
+                status: 400,
+                message: '게시글 수정 실패'
             }
         }
         console.log(board);

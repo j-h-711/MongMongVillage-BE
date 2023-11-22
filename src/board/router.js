@@ -32,7 +32,7 @@ router.patch('/:id', JwtMiddleware.checkToken, upload.array('images'), async (re
             imageUrl = req.files.map((file) => file.location);
             console.log(imageUrl);
         }
-        const updateBoardResult = await boardService.updateBoard({ boardId, title, content, animalType, category, imageUrl })
+        const updateBoardResult = await boardService.updateBoard({ boardId, userId, title, content, animalType, category, imageUrl })
         if (updateBoardResult.message)
             return res.status(404).send(updateBoardResult.message);
         else
