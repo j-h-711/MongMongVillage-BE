@@ -26,15 +26,17 @@ router.post(
     try {
       const { title, content, rating } = req.body;
       const userId = req.token.userId;
+      const reviewId = req.params.reviewId;
 
       // 이미지 데이터
       const imageBuffer = req.file.buffer;
 
-      // 이미지를 업로드하고 URL을 받아온다
+      // 이미지를 업로드하고 URL을 받아옴
       const uploadedURL = await uploadImageToServer(imageBuffer);
 
       const createReview = await ReviewService.createReview({
         user_id: userId,
+        review_id: reviewId,
         title,
         content,
         rating,
@@ -59,23 +61,24 @@ router.post(
 
 // 이미지 업로드 함수
 async function uploadImageToServer(imageBuffer) {
-  // 이미지를 서버에 업로드하고 URL을 반환하는 로직이 들어가야 함
-  // 실제 서비스에서는 이미지 업로드 서비스를 사용해야 함
-  // 여기서는 단순히 이미지를 받아와서 그대로 반환하는 가상의 함수
+  // 이미지 받아와서 반환해줌
   return "uploads/" + Date.now() + "-uploaded.jpg";
 }
-
-// 나머지 라우터와 모델은 동일하게 유지
 
 // 리뷰 리스트 조회
 router.get(
   "/",
+  JwtMiddleware.checkToken,
   asyncHandler(async (req, res) => {
     try {
+      // const userId = req.token.userId;
+      const reviewId = req.params.reviewId;
+
       const reviews = await ReviewService.getAllReviews();
       res.status(200).json({
         status: 200,
         message: "Success",
+        reviewId,
         data: reviews,
       });
     } catch (error) {
@@ -89,15 +92,50 @@ router.get(
   })
 );
 
+// 특정 리뷰 조회
+router.get(
+  "/:reviewId",
+  JwtMiddleware.checkToken,
+  asyncHandler(async (req, res) => {
+    try {
+      const reviewId = req.params.reviewId;
+      const review = await ReviewService.getReviewById(reviewId);
+
+      if (!review) {
+        res.status(404).json({
+          status: 404,
+          message: "리뷰를 찾을 수 없습니다.",
+        });
+        return;
+      }
+      res.status(200).json({
+        status: 200,
+        message: "성공",
+        data: review,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        status: 500,
+        message: "내부 서버 오류",
+        error: error.message,
+      });
+    }
+  })
+);
+
 // 리뷰 수정 - 400에러, 코드 수정하기
 router.put(
   "/:reviewId",
   JwtMiddleware.checkToken,
   asyncHandler(async (req, res) => {
     try {
-      const reviewId = req.token.userId;
+      const userId = req.token.userId;
+      const reviewId = req.params.id;
       const updatedReview = await ReviewService.updateReview(
+        userId,
         reviewId,
+
         req.body
       );
 
@@ -121,7 +159,7 @@ router.delete(
   "/:reviewId",
   JwtMiddleware.checkToken,
   asyncHandler(async (req, res) => {
-    const deletedReview = await ReviewService.deleteReview(req.token.reviewId);
+    const deletedReview = await ReviewService.deleteReview(reviewId);
     if (deletedReview) {
       res.status(200).json({
         status: 200,
