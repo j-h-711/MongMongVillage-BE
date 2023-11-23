@@ -124,14 +124,13 @@ router.get(
   })
 );
 
-// 리뷰 수정 - 400에러, 코드 수정하기
-router.put(
+// 리뷰 수정 
   "/:reviewId",
   JwtMiddleware.checkToken,
   asyncHandler(async (req, res) => {
     try {
       const userId = req.token.userId;
-      const reviewId = req.params.id;
+      const reviewId = req.params.reviewId;
       const updatedReview = await ReviewService.updateReview(
         userId,
         reviewId,
