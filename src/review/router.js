@@ -124,8 +124,8 @@ router.get(
   })
 );
 
-// 리뷰 수정 
-  "/:reviewId",
+// 리뷰 수정
+"/:reviewId",
   JwtMiddleware.checkToken,
   asyncHandler(async (req, res) => {
     try {
@@ -134,7 +134,6 @@ router.get(
       const updatedReview = await ReviewService.updateReview(
         userId,
         reviewId,
-
         req.body
       );
 
@@ -151,14 +150,16 @@ router.get(
         error: error.message,
       });
     }
-  })
-);
+  });
 
 router.delete(
   "/:reviewId",
   JwtMiddleware.checkToken,
   asyncHandler(async (req, res) => {
-    const deletedReview = await ReviewService.deleteReview(reviewId);
+    const userId = req.token.userId;
+    const reviewId = req.params.reviewId;
+
+    const deletedReview = await ReviewService.deleteReview(userId, reviewId);
     if (deletedReview) {
       res.status(200).json({
         status: 200,
