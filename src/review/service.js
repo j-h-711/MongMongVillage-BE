@@ -54,6 +54,36 @@ class ReviewService {
     }
   }
 
+  // static async getReviewsByUser(
+  //   userId,
+  //   { page = 1, itemsPerPage = 10, sortBy }
+  // ) {
+  //   try {
+  //     let sortOption = {};
+
+  //     if (sortBy === "latest") {
+  //       sortOption = { createdAt: -1 };
+  //     } else if (sortBy === "popular") {
+  //       sortOption = { rating: -1 };
+  //     }
+
+  //     const query = { user_id: mongoose.Types.ObjectId(loggedInUseruseId) };
+
+  //     const reviews = await Review.find(query)
+  //       .sort(sortOption)
+  //       .skip((page - 1) * itemsPerPage)
+  //       .limit(itemsPerPage)
+  //       .populate({
+  //         path: "cafe_id",
+  //         select: "name",
+  //       });
+
+  //     return reviews;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
   static async getReviewById(reviewId, userId) {
     try {
       const review = await Review.findById(reviewId)
@@ -109,35 +139,35 @@ class ReviewService {
     }
   }
 
-  static async getReviewsByUser(
-    userId,
-    { page = 1, itemsPerPage = 10, sortBy }
-  ) {
-    try {
-      let sortOption = {};
+  // static async getReviewsByUser(
+  //   userId,
+  //   { page = 1, itemsPerPage = 10, sortBy }
+  // ) {
+  //   try {
+  //     let sortOption = {};
 
-      if (sortBy === "latest") {
-        sortOption = { createdAt: -1 };
-      } else if (sortBy === "popular") {
-        sortOption = { rating: -1 };
-      }
+  //     if (sortBy === "latest") {
+  //       sortOption = { createdAt: -1 };
+  //     } else if (sortBy === "popular") {
+  //       sortOption = { rating: -1 };
+  //     }
 
-      const reviews = await Review.find({
-        user_id: mongoose.Types.ObjectId(userId),
-      })
-        .sort(sortOption)
-        .skip((page - 1) * itemsPerPage)
-        .limit(itemsPerPage)
-        .populate({
-          path: "cafe_id",
-          select: "name",
-        });
+  //     const reviews = await Review.find({
+  //       user_id: mongoose.Types.ObjectId(userId),
+  //     })
+  //       .sort(sortOption)
+  //       .skip((page - 1) * itemsPerPage)
+  //       .limit(itemsPerPage)
+  //       .populate({
+  //         path: "cafe_id",
+  //         select: "name",
+  //       });
 
-      return reviews;
-    } catch (error) {
-      throw error;
-    }
-  }
+  //     return reviews;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   static async deleteReview(userId, reviewId) {
     try {
@@ -160,6 +190,16 @@ class ReviewService {
 
       return deletedReview;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getUserReviews(userId) {
+    try {
+      const reviews = await Review.find({ user_id: userId });
+      return reviews; // 반환값을 객체로 감싸지 않고 바로 리뷰 목록을 반환하도록 수정
+    } catch (error) {
+      console.error(error);
       throw error;
     }
   }

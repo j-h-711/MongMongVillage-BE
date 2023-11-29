@@ -4,7 +4,6 @@ const { Review } = require("./model/review.schema");
 const ReviewService = require("./service");
 const JwtMiddleware = require("../middleware/jwt-handler");
 const router = express.Router();
-
 const { imageUploadConfig } = require("../utils/s3-multer");
 const reviewsUpload = imageUploadConfig("review");
 
@@ -189,36 +188,19 @@ router.delete(
 );
 
 // 사용자가 작성한 리뷰
-router.get(
-  "/:userId/my-reviews",
-  JwtMiddleware.checkToken,
-  asyncHandler(async (req, res) => {
-    try {
-      const targetUserId = req.params.userId; // 특정 사용자의 ID
-      const page = parseInt(req.query.page) || 1;
-      const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-      const sortBy = req.query.sortBy;
+router.get("/mypage/user", JwtMiddleware.checkToken, async (req, res, next) => {
+  try {
+    const userId = req.token.userId;
 
-      const reviews = await ReviewService.getReviewsByUser(targetUserId, {
-        page,
-        itemsPerPage,
-        sortBy,
-      });
-
-      res.status(200).json({
-        status: 200,
-        message: "Success",
-        data: reviews,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        status: 500,
-        message: "Internal Server Error",
-        error: error.message,
-      });
-    }
-  })
-);
+    const userReviews = await ReviewService.getUserReviews(userId);
+    return res.status(200).json({
+      status: 200,
+      reviews: userReviews,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 module.exports = router;
