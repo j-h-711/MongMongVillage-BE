@@ -1,21 +1,17 @@
-const proj4 = require("proj4");
+const proj4 = require('proj4');
 
-const Cafe = require("./model/cafe.schema");
-const Review = require("../review/model/review.schema");
+const Cafe = require('./model/cafe.schema');
+const Review = require('../review/model/review.schema');
 
 exports.initCafes = async () => {
   try {
     const cafes = [];
 
-    const epsg5174 =
-      "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43";
-    const epsg4326 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+    const epsg5174 = '+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43';
+    const epsg4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
 
     cafes.map(async (cafeInfo) => {
-      const [latitude, longitude] = proj4(epsg5174, epsg4326, [
-        cafeInfo.longitude,
-        cafeInfo.latitude,
-      ]);
+      const [latitude, longitude] = proj4(epsg5174, epsg4326, [cafeInfo.longitude, cafeInfo.latitude]);
       await Cafe.create({
         name: cafeInfo.name,
         phone_number: cafeInfo.phone_number,
@@ -24,7 +20,7 @@ exports.initCafes = async () => {
         zip_code: cafeInfo.zip_code,
         intro: cafeInfo.intro,
         menu: cafeInfo.menu,
-        image: "",
+        image: '',
         operating_time: cafeInfo.operating_time,
         longitude: longitude,
         latitude: latitude,
@@ -33,7 +29,7 @@ exports.initCafes = async () => {
     });
     return {
       status: 201,
-      message: "카페가 성공적으로 생성되었습니다.",
+      message: '카페가 성공적으로 생성되었습니다.',
     };
   } catch (error) {
     throw error;
@@ -77,14 +73,29 @@ exports.updateCafe = async (cafeId, cafeInfo, imageUrl) => {
 
 exports.getCafesSortByRating = async () => {
   try {
-    const cafes = await Cafe.find({})
-      .sort("-rating -createdAt")
-      .limit(4)
-      .select("_id name rating image road_addr");
+    const cafes = await Cafe.find({}).sort('-rating -createdAt').limit(4).select('_id name rating image road_addr');
     if (!cafes) {
       return {
         status: 404,
-        message: "카페가 존재하지 않습니다.",
+        message: '카페가 존재하지 않습니다.',
+      };
+    }
+    return {
+      status: 200,
+      cafes,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.getCafesSortByRatingTop100 = async () => {
+  try {
+    const cafes = await Cafe.find({}).sort('-rating -createdAt').limit(100).select('_id name rating image road_addr operating_time');
+    if (!cafes) {
+      return {
+        status: 404,
+        message: '카페가 존재하지 않습니다.',
       };
     }
     return {
@@ -103,22 +114,19 @@ exports.getDetailCafe = async (cafeId) => {
 
     const reviews = await Review.find({ cafe_id: cafeId })
       .sort({ createdAt: -1 })
-      .populate({ path: "user_id", select: "_id nickname profilePicture" })
-      .select("_id user_id images rating title content");
+      .populate({ path: 'user_id', select: '_id nickname profilePicture' })
+      .select('_id user_id images rating title content');
 
     if (!cafe) {
       return {
         status: 404,
-        message: "해당 카페를 찾을 수 없습니다.",
+        message: '해당 카페를 찾을 수 없습니다.',
       };
     }
 
     let averageRating = 0;
     if (reviews.length > 0) {
-      const totalRating = reviews.reduce(
-        (sum, review) => sum + review.rating,
-        0
-      );
+      const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
       averageRating = totalRating / reviews.length;
       averageRating = Math.round(averageRating * 10) / 10;
     }
@@ -143,16 +151,12 @@ exports.getDetailCafe = async (cafeId) => {
 
 exports.getSearchCafes = async (content) => {
   try {
-    const options = [
-      { road_addr: new RegExp(content) },
-      { region_addr: new RegExp(content) },
-      { name: new RegExp(content) },
-    ];
+    const options = [{ road_addr: new RegExp(content) }, { region_addr: new RegExp(content) }, { name: new RegExp(content) }];
     const cafes = await Cafe.find({ $or: options });
     if (!cafes.length) {
       return {
         status: 400,
-        message: "검색 결과가 없습니다.",
+        message: '검색 결과가 없습니다.',
       };
     }
     return {
