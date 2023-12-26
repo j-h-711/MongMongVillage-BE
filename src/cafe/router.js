@@ -52,7 +52,7 @@ router.get('/rating', async (req, res, next) => {
 });
 
 // 인기까페 top100 별점순, 별점 같으면 최신순
-router.get('/rating100', async (req, res, next) => {
+router.get('/top100', async (req, res, next) => {
   try {
     const cafeResultSortByRating = await cafeService.getCafesSortByRatingTop100();
     if (cafeResultSortByRating.message) {
