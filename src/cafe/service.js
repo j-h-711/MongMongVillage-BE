@@ -56,7 +56,7 @@ exports.getAllCafes = async () => {
         '$unset': 'reviews'
       }
     ])
-    .sort('-reviewCount -rating');
+    .sort('-rating -reviewCount');
 
     return {
       status: 200,
