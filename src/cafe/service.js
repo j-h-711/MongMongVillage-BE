@@ -3,42 +3,61 @@ const proj4 = require('proj4');
 const Cafe = require('./model/cafe.schema');
 const Review = require('../review/model/review.schema');
 
-exports.initCafes = async () => {
-  try {
-    const cafes = [];
+// 좌표 설정
+// exports.initCafes = async () => {
+//   try {
+//     const cafes = [];
 
-    const epsg5174 = '+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43';
-    const epsg4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
+//     const epsg5174 = '+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43';
+//     const epsg4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
 
-    cafes.map(async (cafeInfo) => {
-      const [latitude, longitude] = proj4(epsg5174, epsg4326, [cafeInfo.longitude, cafeInfo.latitude]);
-      await Cafe.create({
-        name: cafeInfo.name,
-        phone_number: cafeInfo.phone_number,
-        road_addr: cafeInfo.road_addr,
-        region_addr: cafeInfo.region_addr,
-        zip_code: cafeInfo.zip_code,
-        intro: cafeInfo.intro,
-        menu: cafeInfo.menu,
-        image: '',
-        operating_time: cafeInfo.operating_time,
-        longitude: longitude,
-        latitude: latitude,
-        rating: 0,
-      });
-    });
-    return {
-      status: 201,
-      message: '카페가 성공적으로 생성되었습니다.',
-    };
-  } catch (error) {
-    throw error;
-  }
-};
+//     cafes.map(async (cafeInfo) => {
+//       const [latitude, longitude] = proj4(epsg5174, epsg4326, [cafeInfo.longitude, cafeInfo.latitude]);
+//       await Cafe.create({
+//         name: cafeInfo.name,
+//         phone_number: cafeInfo.phone_number,
+//         road_addr: cafeInfo.road_addr,
+//         region_addr: cafeInfo.region_addr,
+//         zip_code: cafeInfo.zip_code,
+//         intro: cafeInfo.intro,
+//         menu: cafeInfo.menu,
+//         image: '',
+//         operating_time: cafeInfo.operating_time,
+//         longitude: longitude,
+//         latitude: latitude,
+//         rating: 0,
+//       });
+//     });
+//     return {
+//       status: 201,
+//       message: '카페가 성공적으로 생성되었습니다.',
+//     };
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 
 exports.getAllCafes = async () => {
   try {
-    const cafes = await Cafe.find({});
+    const cafes = await Cafe.aggregate([
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "_id",
+          foreignField: "cafe_id",
+          as: "reviews",
+        },
+      },
+      {
+        $addFields: {
+          reviewCount:{ $size:"$reviews" },
+        }
+      }, {
+        '$unset': 'reviews'
+      }
+    ])
+    .sort('-reviewCount -rating');
+
     return {
       status: 200,
       cafes,
@@ -91,7 +110,10 @@ exports.getCafesSortByRating = async () => {
 
 exports.getCafesSortByRatingTop100 = async () => {
   try {
-    const cafes = await Cafe.find({}).sort('-rating -createdAt').limit(100).select('_id name rating image road_addr operating_time');
+    const cafes = await Cafe.find({})
+                    .sort('-rating -createdAt')
+                    .limit(100)
+                    .select('_id name rating image road_addr operating_time');
     if (!cafes) {
       return {
         status: 404,
