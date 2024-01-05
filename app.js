@@ -16,7 +16,7 @@ connect();
 
 app.use(
   cors({
-    origin: true,
+    origin: "https://mongmong-village-fe.vercel.app/",
     credentials: false,
   })
 );
@@ -32,11 +32,7 @@ app.use("/api/cafes", cafeRouter);
 app.use("/api/reviews", reviewRouter);
 
 app.get("/api", (req, res) => {
-  res.send("test");
-});
-
-app.get("/", (req, res) => {
-  res.send("hi");
+  res.send("몽몽빌리지 테스트 화면입니다.");
 });
 
 app.use((req, res, next) => {
@@ -54,6 +50,6 @@ app.use((err, req, res, next) => {
   res.send(err.message || "Error!!");
 });
 
-app.listen(8000, () => {
-  console.log("http://localhost:8000 서버 실행 중");
+app.listen(8080, () => {
+  console.log("http://localhost:8080 서버 실행 중");
 });
