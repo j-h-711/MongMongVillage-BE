@@ -31,7 +31,7 @@ app.use("/api/comments", commentRouter);
 app.use("/api/cafes", cafeRouter);
 app.use("/api/reviews", reviewRouter);
 
-app.get("/api", (req, res) => {
+app.get("/", (req, res) => {
   res.send("몽몽빌리지 테스트 화면입니다.");
 });
 
