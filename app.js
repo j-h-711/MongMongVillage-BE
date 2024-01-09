@@ -16,7 +16,7 @@ connect();
 
 app.use(
   cors({
-    origin: "https://mongmong-village-fe.vercel.app/",
+    origin: "https://www.mongmongvillage.store",
     credentials: false,
   })
 );
